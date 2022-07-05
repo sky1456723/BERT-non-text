@@ -1,15 +1,19 @@
 # Envrionment
-All the package version are listed in the `requirements.txt` files. The files produced by `pip freeze`. The basic packages used are the following:
+All the package version are listed in the `requirements.txt` files. The basic packages used are the following:
 ```
 transformers=3.1.0
 torch=1.6.0
 numpy=1.19.1
 scipy=1.5.2
-sklearn=0.23.2
+sklearn
+pandas
+protobuf=3.20.0
 tensorboardX=2.1
 tqdm=4.48.2
 pretty_midi=0.2.9
 ```
+
+Recommandation: You can pull the docker image `sky1456723/handover:dna` and `pip install -r requirements.txt` in the docker container to prepare the environment.
 
 # Data preparation
 ## GLUE
@@ -29,9 +33,9 @@ before run our script.
 
 ## Protein classification
 Please do the following under the `Protein` directory:
-1. Please download the data from the site: http://ailab.snu.ac.kr/PLUS/
+1. Please download the data from the site: http://ailab.snu.ac.kr/PLUS/ (Because the website is not stable, I also make a backup on battleship. The datasets are put in the folder `/livingrooms/jimmykao1453/backup_protein_data`.)
 2. Unzip the data (.fa files) to the `data` directory
-3. Run `save_feature.py` to preprocess the input feature and save it to `preprocess_input/TASK_NAME/`, TASK_NAME is the corresponding task name. The input arguments of `save_feature.py` are:
+3. Run `save_feature.py` to preprocess the input feature and save it to `preprocess_input/TASK_NAME/` (please `mkdir` these folders by yourself.), TASK_NAME is the corresponding task name. The input arguments of `save_feature.py` are:
 ```
 --task The downstream task name
 --model The pre-trained model name, default is bert-base-uncased
