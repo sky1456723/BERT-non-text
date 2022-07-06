@@ -298,12 +298,20 @@ class BertSelfOutput(nn.Module):
         self.dense = nn.Linear(config.hidden_size, config.hidden_size)
         self.LayerNorm = BertLayerNorm(config.hidden_size, eps=config.layer_norm_eps)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
+        if hasattr(config, "output_preLN"):
+            self.output_preLN = config.output_preLN
+        else:
+            self.output_preLN = False
 
     def forward(self, hidden_states, input_tensor):
         hidden_states = self.dense(hidden_states)
         hidden_states = self.dropout(hidden_states)
+        preLN = hidden_states + input_tensor
         hidden_states = self.LayerNorm(hidden_states + input_tensor)
-        return hidden_states
+        if self.output_preLN:
+            return hidden_states, preLN
+        else:
+            return hidden_states
 
 
 class BertAttention(nn.Module):
@@ -312,6 +320,10 @@ class BertAttention(nn.Module):
         self.self = BertSelfAttention(config)
         self.output = BertSelfOutput(config)
         self.pruned_heads = set()
+        if hasattr(config, "output_preLN"):
+            self.output_preLN = config.output_preLN
+        else:
+            self.output_preLN = False
 
     def prune_heads(self, heads):
         if len(heads) == 0:
@@ -349,7 +361,10 @@ class BertAttention(nn.Module):
             output_attentions,
         )
         attention_output = self.output(self_outputs[0], hidden_states)
-        outputs = (attention_output,) + self_outputs[1:]  # add attentions if we output them
+        if self.output_preLN:
+            outputs = (*attention_output,) + self_outputs[1:]  # add attentions if we output them
+        else:
+            outputs = (attention_output,) + self_outputs[1:]  # add attentions if we output them
         return outputs
 
 
@@ -374,12 +389,20 @@ class BertOutput(nn.Module):
         self.dense = nn.Linear(config.intermediate_size, config.hidden_size)
         self.LayerNorm = BertLayerNorm(config.hidden_size, eps=config.layer_norm_eps)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
+        if hasattr(config, "output_preLN"):
+            self.output_preLN = config.output_preLN
+        else:
+            self.output_preLN = False
 
     def forward(self, hidden_states, input_tensor):
         hidden_states = self.dense(hidden_states)
         hidden_states = self.dropout(hidden_states)
-        hidden_states = self.LayerNorm(hidden_states + input_tensor)
-        return hidden_states
+        preLN = hidden_states + input_tensor
+        hidden_states = self.LayerNorm(preLN)
+        if self.output_preLN:
+            return hidden_states, preLN
+        else:
+            return hidden_states
 
 
 class BertLayer(nn.Module):
@@ -395,6 +418,10 @@ class BertLayer(nn.Module):
             self.crossattention = BertAttention(config)
         self.intermediate = BertIntermediate(config)
         self.output = BertOutput(config)
+        if hasattr(config, "output_preLN"):
+            self.output_preLN = config.output_preLN
+        else:
+            self.output_preLN = False
 
     def forward(
         self,
@@ -432,7 +459,10 @@ class BertLayer(nn.Module):
         layer_output = apply_chunking_to_forward(
             self.feed_forward_chunk, self.chunk_size_feed_forward, self.seq_len_dim, attention_output
         )
-        outputs = (layer_output,) + outputs
+        if self.output_preLN:
+            outputs = (*layer_output,) + outputs
+        else:
+            outputs = (layer_output,) + outputs
         return outputs
 
     def feed_forward_chunk(self, attention_output):
@@ -460,6 +490,7 @@ class BertEncoder(nn.Module):
     ):
         all_hidden_states = () if output_hidden_states else None
         all_attentions = () if output_attentions else None
+        all_prelns = () if self.config.output_preLN else None
         for i, layer_module in enumerate(self.layer):
             if output_hidden_states:
                 all_hidden_states = all_hidden_states + (hidden_states,)
@@ -490,14 +521,20 @@ class BertEncoder(nn.Module):
                     output_attentions,
                 )
             hidden_states = layer_outputs[0]
-            if output_attentions:
+            if self.config.output_preLN and output_attentions:
+                all_prelns = all_prelns + ((layer_outputs[1],layer_outputs[2]),)
+                all_attentions = all_attentions + (layer_outputs[3:],)
+            elif self.config.output_preLN:
+                all_prelns = all_prelns + ((layer_outputs[1],layer_outputs[2]),)
+            elif output_attentions:
                 all_attentions = all_attentions + (layer_outputs[1],)
 
         if output_hidden_states:
             all_hidden_states = all_hidden_states + (hidden_states,)
 
         if not return_dict:
-            return tuple(v for v in [hidden_states, all_hidden_states, all_attentions] if v is not None)
+            return tuple(v for v in [hidden_states, all_hidden_states, all_attentions, all_prelns] if v is not None)
+        #preLN dict not implemented
         return BaseModelOutput(
             last_hidden_state=hidden_states, hidden_states=all_hidden_states, attentions=all_attentions
         )

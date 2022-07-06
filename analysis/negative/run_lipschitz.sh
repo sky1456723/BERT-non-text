@@ -1,0 +1,2 @@
+#python Lipschitz.py --model bert-base-uncased --task MNLI\ SST-2\ STS-B --seed 100\ 101\ 102 --shift 1000 --save_dir ./Analysis/lipschitz
+python Lipschitz.py --model bert-base-uncased --task MNLI --seed 100 --shift 1000 --save_dir ./Analysis/lipschitz
