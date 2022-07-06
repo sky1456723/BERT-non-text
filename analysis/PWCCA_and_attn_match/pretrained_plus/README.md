@@ -1,0 +1,1 @@
+You can download PLUS pre-trained model and put the ckpt files here.

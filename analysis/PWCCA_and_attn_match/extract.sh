@@ -1,0 +1,1 @@
+python BERT_PLUS_extract.py --protein_dir /mnt/storage1/EMNLP2021/emnlp2021/exp_code/Protein --save_dir ./attn_features --pretrained_BERT --plus_ckpt ./pretrained_plus/PLUS-TFM.pt --task localization --feature attention

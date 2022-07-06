@@ -1,0 +1,6 @@
+{
+    "train_path":   "data/Solubility/solubility_train.fa",
+    "dev_path":     "data/Solubility/solubility_dev.fa",
+    "test_path":    "data/Solubility/solubility_test.fa",
+    "num_labels":   2
+}
