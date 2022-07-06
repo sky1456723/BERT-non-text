@@ -8,3 +8,6 @@ tqdm==4.48.2
 pretty_midi==0.2.9
 protobuf==3.20.0
 pandas
+h5py
+cycler
+matplotlib
