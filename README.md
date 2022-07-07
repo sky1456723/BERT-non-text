@@ -18,7 +18,7 @@ tqdm=4.48.2
 pretty_midi=0.2.9
 ```
 
-Recommandation: You can pull the docker image `sky1456723/handover:dna` and `pip install -r requirements.txt` in the docker container to prepare the environment.
+Recommandation: You can pull the docker image `sky1456723/handover:latest` (or pull `sky1456723/handover:dna` and `pip install -r requirements.txt` in the docker container) to prepare the environment.
 
 # Data preparation
 ## GLUE
