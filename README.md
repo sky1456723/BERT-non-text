@@ -1,3 +1,5 @@
+This is the code for the EMNLP 2021 findings paper [Is BERT a Cross-Disciplinary Knowledge Learner? A Surprising Finding of Pre-trained Models' Transferability](https://arxiv.org/abs/2103.07162).
+
 # Envrionment
 All the package version are listed in the `requirements.txt` files. The basic packages used are the following:
 ```
@@ -7,6 +9,9 @@ numpy=1.19.1
 scipy=1.5.2
 sklearn
 pandas
+matplotlib
+cycler
+h5py
 protobuf=3.20.0
 tensorboardX=2.1
 tqdm=4.48.2
@@ -21,7 +26,7 @@ To use the GLUE dataset, we use the script of the example script of the **transf
 
 https://github.com/huggingface/transformers 
 
-Please use the `download_glue_data.py` under the `utils` directory to download the glue dataset:
+Please use the `download_glue_data.py` to download the glue dataset. The file is copied and modified from GLUE dataset's repo: https://github.com/nyu-mll/GLUE-baselines (I add one entry in the python dictionary in line 33.).
 ```
 python download_glue_data.py --data_dir /path/to/glue --tasks all
 ```
@@ -43,19 +48,30 @@ Please do the following under the `Protein` directory:
 --split The train/dev/test split to preprocess
 --ratio To control the training dataset size (for the generalization ability experiments).
 ```
+The `--task` could be `localization`, `fluorescence`, or `stability`.
 
 ## DNA classification
 Please do the following under the `DNA` directory:
 1. Please clone the git repository:https://github.com/Doulrs/Hilbert-CNN
 2. Run `preprocess.py` and `preprocess_splice.py` to preprocessing the input data. The input arguments are similar to `save_feature.py` in the `Protein` directory.
 
+The `--task` of `preprocess.py` could be `H3`, `H3K9ac`, or `H4`.
+
 ## Music 
 Please do the following under the `Music` directory:
-1. Download the MAESTRO-v1 dataset from:https://magenta.tensorflow.org/datasets/maestro#download (including the midi data and the metadata.)
+1. Download the MAESTRO-v1 dataset from:https://magenta.tensorflow.org/datasets/maestro#download (downloading the midi data and the metadata is enough.)
 2. Unzip the data under the `Music/raw_data` directory.
 3. Run `preprocess.py` to preprocess the input data and save it to the `Music/data/maestro-v1` directory.
 
 # Fine-tune and evaluate
+
+Note: I only prepare the token mapping table files for random seed 100-109 under `assign_token` folder. If you would like to use other seeds, please run `gen_table.py` first to generate the mapping table. The input arguments of `gen_table.py` are
+```
+--model The model to use (for tokenizer).
+--seed The random seed to use.
+--save_dir The directory to save the generated file.
+```
+
 ## GLUE
 We modified the **transformers** library v.3.1.0. The modified source code are in the `transformers` directory under the `GLUE` dataset. Please use the modified library but not the original one. 
 

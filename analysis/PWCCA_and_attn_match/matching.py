@@ -3,6 +3,8 @@ import scipy
 import scipy.optimize
 import numpy as np
 import matplotlib.pyplot as plt
+import argparse
+import os
 
 @torch.no_grad()
 def costing(x, y):
@@ -38,9 +40,13 @@ def matching(c):
     std_cost = np.std(total_cost, axis = -1)
     return mean_cost, std_cost, match
 
-bert_attn = torch.load('./attn_features/bert_hidden.pkl')
-scratch_attn = torch.load('./attn_features/scratch_hidden.pkl')
-plus_attn = torch.load('./attn_features/plus_attn.pkl')
+parser = argparse.ArgumentParser()
+parser.add_argument('--data_dir', type = str)
+args = parser.parse_args()
+
+bert_attn = torch.load(os.path.join(args.data_dir, 'bert_hidden.pkl'))
+scratch_attn = torch.load(os.path.join(args.data_dir, 'scratch_hidden.pkl'))
+plus_attn = torch.load(os.path.join(args.data_dir, 'plus_attn.pkl'))
 
 bert_plus_cost = costing(bert_attn, plus_attn)
 bert_scratch_cost = costing(bert_attn, scratch_attn)

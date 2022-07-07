@@ -1,11 +1,17 @@
 import torch
 from utils import PWCCA
+import argparse
+import os
 
-task = 'localization'
+parser = argparse.ArgumentParser()
+parser.add_argument('--task', type = str)
+parser.add_argument('--data_dir', type = str)
+args = parser.parse_args()
+task = args.task
 
-bert_hidden = torch.load('./features/bert_hidden.pkl')
-scratch_hidden = torch.load('./features/scratch_hidden.pkl')
-plus_embeddings = torch.load('./attn_features/plus_hidden.pkl')
+bert_hidden = torch.load(os.path.join(args.data_dir, 'bert_hidden.pkl'))
+scratch_hidden = torch.load(os.path.join(args.data_dir, 'scratch_hidden.pkl'))
+plus_embeddings = torch.load(os.path.join(args.data_dir, 'plus_hidden.pkl'))
 
 regs={'stability':1.5e-3, 'fluorescence':1e-3, 'localization':1e-4}
 results = PWCCA(X = bert_hidden, Y = plus_embeddings, reg = regs[task])
